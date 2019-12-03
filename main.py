@@ -5,9 +5,6 @@ import numpy as np
 from statistics import mean
 from glob import glob
 
-files = glob('myphotos/*.jpg')
-number_of_pictures = len(files)
-
 
 class Dot:
     def __init__(self, contour):
@@ -84,7 +81,7 @@ def create_window(window_name):
 
 
 def find_contours(gray_image):
-    image = cv2.GaussianBlur(gray_image, (15, 15), 3)
+    image = cv2.GaussianBlur(gray_image, (25, 25), 5)
     image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 1)
     kernel = np.ones((5, 5), np.uint8)
     image = cv2.erode(image, kernel, iterations=1)
@@ -136,48 +133,7 @@ def create_dices(dots):
     return dices
 
 
-def main_photos():
-    for i in range(number_of_pictures):
-        window_name = 'Dice' + str(i + 1)
-        create_window(window_name)
-
-        original_image = cv2.imread(files[i], cv2.IMREAD_COLOR)
-        if original_image.shape[0] > original_image.shape[1]:
-            original_image = cv2.rotate(original_image, cv2.ROTATE_90_CLOCKWISE)
-
-        processed_image = original_image.copy()
-        gray_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
-
-        contours = find_contours(gray_image)
-
-        dots = draw_dots(contours, processed_image)
-
-        dices = create_dices(dots)
-
-        result = 0
-
-        for dice in dices:
-            dice.draw_rectangle(processed_image)
-            result += dice.result
-
-        cv2.putText(processed_image, "Suma: " + str(result), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3,
-                    cv2.LINE_AA)
-
-        cv2.imshow(window_name, original_image)
-        cv2.imwrite('results/' + str("{:02d}".format(i + 1)) + '.jpg', processed_image)
-
-        key = cv2.waitKey(0)
-
-        if key == 13:  # enter
-            cv2.imshow(window_name, processed_image)
-            key = cv2.waitKey(0)
-        if key == 27:  # esc
-            sys.exit()
-        cv2.destroyAllWindows()
-
-
-def run_algorithm(image):
-
+def algorithm(image):
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     contours = find_contours(gray_image)
@@ -197,15 +153,47 @@ def run_algorithm(image):
     return image
 
 
+# Global Variables
+files = glob('myphotos/*.jpg')
+number_of_pictures = len(files)
+
+
+# With photos
+def main_photos():
+    for i in range(number_of_pictures):
+        window_name = 'Dice' + str(i + 1)
+        create_window(window_name)
+
+        original_image = cv2.imread(files[i], cv2.IMREAD_COLOR)
+        if original_image.shape[0] > original_image.shape[1]:
+            original_image = cv2.rotate(original_image, cv2.ROTATE_90_CLOCKWISE)
+
+        processed_image = algorithm(original_image.copy())
+
+        cv2.imshow(window_name, original_image)
+        cv2.imwrite('results/' + str("{:02d}".format(i + 1)) + '.jpg', processed_image)
+
+        key = cv2.waitKey(0)
+
+        if key == 13:  # enter
+            cv2.imshow(window_name, processed_image)
+            key = cv2.waitKey(0)
+        if key == 27:  # esc
+            sys.exit()
+        cv2.destroyAllWindows()
+
+
+# With camera
 def main_camera():
     cap = cv2.VideoCapture(2)
+    # Change resolution
     # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1600)
     # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 900)
 
     while True:
         try:
             ret, image = cap.read()
-            done_image = run_algorithm(image)
+            done_image = algorithm(image)
             cv2.imshow('object detection', done_image)
             # exit when escape
             if cv2.waitKey(1) == 27:
@@ -217,4 +205,4 @@ def main_camera():
 
 
 if __name__ == '__main__':
-    main_camera()
+    main_photos()
