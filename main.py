@@ -205,4 +205,6 @@ def main_camera():
 
 
 if __name__ == '__main__':
+    # main_camera()
     main_photos()
+
