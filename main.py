@@ -1,9 +1,10 @@
 import math
 import sys
+from glob import glob
+from statistics import mean
+
 import cv2
 import numpy as np
-from statistics import mean
-from glob import glob
 
 
 class Dot:
@@ -135,13 +136,9 @@ def create_dices(dots):
 
 def algorithm(image):
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
     contours = find_contours(gray_image)
-
     dots = draw_dots(contours, image)
-
     dices = create_dices(dots)
-
     result = 0
 
     for dice in dices:
@@ -207,4 +204,3 @@ def main_camera():
 if __name__ == '__main__':
     # main_camera()
     main_photos()
-
